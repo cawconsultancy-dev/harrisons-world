@@ -109,7 +109,7 @@
   HW.registerGame = function (def) { HW.games.push(def); HW.gameById[def.id] = def; };
 
   HW.makeKit = function (stage, def, intro) {
-    var g = { alive: true, stage: stage, def: def, busy: false, timers: [], cleanups: [] };
+    var g = { alive: true, stage: stage, def: def, busy: false, timers: [], cleanups: [], resizers: [] };
     var never = new Promise(function () {});
     var introDone = intro || Promise.resolve();
     g.later = function (ms, fn) {
@@ -126,6 +126,8 @@
       return HW.onTap(el, function (ev) { if (!g.alive) return; fn(ev); }, gap);
     };
     g.onCleanup = function (fn) { g.cleanups.push(fn); };
+    /* games that keep his work when the tablet turns lay themselves out again instead of restarting */
+    g.onResize = function (fn) { g.resizers.push(fn); };
 
     /* the written word appears big in the top bar, so it never covers the game */
     var bar = stage.parentNode && stage.parentNode.querySelector(".topbar-title");

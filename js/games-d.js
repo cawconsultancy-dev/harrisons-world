@@ -11,17 +11,21 @@
   /* a set of round buttons (paint pots or stamps): a row along the bottom when the
      screen is upright, two columns on the right when it is sideways */
   function potGrid(g, items, render, onPick) {
-    var s = g.size(), port = portrait(g), n = items.length;
-    var size = port ? Math.max(56, Math.min((s.w - 24 - (n - 1) * 8) / n, s.h * 0.12, 96))
-                    : Math.max(56, Math.min((s.h - 24 - 2 * 10) / 3, s.w * 0.11, 96));
-    var grid = g.el("div", "pot-grid");
-    grid.style.cssText = port
-      ? "left:50%;bottom:10px;transform:translateX(-50%);grid-template-columns:repeat(" + n + "," + size + "px);gap:8px"
-      : "right:10px;top:50%;transform:translateY(-50%);grid-template-columns:repeat(2," + size + "px);gap:10px";
-    grid._size = size; grid._port = port;
+    var n = items.length, grid = g.el("div", "pot-grid");
+    grid.layout = function () {
+      var s = g.size(), port = portrait(g);
+      var size = port ? Math.max(56, Math.min((s.w - 24 - (n - 1) * 8) / n, s.h * 0.12, 96))
+                      : Math.max(56, Math.min((s.h - 24 - 2 * 10) / 3, s.w * 0.11, 96));
+      grid.style.cssText = port
+        ? "left:50%;bottom:10px;transform:translateX(-50%);grid-template-columns:repeat(" + n + "," + size + "px);gap:8px"
+        : "right:10px;top:50%;transform:translateY(-50%);grid-template-columns:repeat(2," + size + "px);gap:10px";
+      grid._size = size; grid._port = port;
+      (grid._btns || []).forEach(function (b) { b.style.width = b.style.height = size + "px"; });
+    };
+    grid.layout();
     grid._btns = items.map(function (it) {
       var b = HW.el("button", "pot", grid);
-      b.style.width = b.style.height = size + "px";
+      b.style.width = b.style.height = grid._size + "px";
       b.setAttribute("aria-label", HW.word(it));
       b.appendChild(render(it)); b._item = it;
       g.tap(b, function () { grid._btns.forEach(function (x) { x.classList.remove("on"); }); b.classList.add("on"); g.bounce(b); onPick(it, b); }, 300);
@@ -35,8 +39,8 @@
   function cornerButton(g, grid, label, inner) {
     var b = g.el("button", "abs corner-btn"); b.setAttribute("aria-label", label);
     if (typeof inner === "string") b.innerHTML = inner; else b.appendChild(inner);
-    b.style.top = "12px";
-    b.style.right = grid._port ? "12px" : (grid._size * 2 + 10 + 32) + "px";
+    b.layout = function () { b.style.top = "12px"; b.style.right = grid._port ? "12px" : (grid._size * 2 + 10 + 32) + "px"; };
+    b.layout();
     return b;
   }
   /* the space left for a picture once the pots and the corner button are placed */
@@ -204,7 +208,7 @@
         if (state === "done") { tumble(); return; }
         if (state !== "build" || blocks.length >= 5) return;
         g.busy = true;
-        var G = geo(), n = blocks.length, b = g.el("div", "abs");
+        var G = geo(), n = blocks.length, last = n === 4, b = g.el("div", "abs");
         var y = G.base - (n + 1) * G.size;
         b.style.cssText = "left:" + (G.x + HW.rand(-5, 5)) + "px;top:" + y + "px;width:" + G.size + "px;height:" + G.size + "px;z-index:3";
         b.appendChild(HW.svgEl(A.block(COLS[n], n + 1)));
@@ -212,7 +216,7 @@
         await g.anim(b, [{ transform: "translateY(" + (-y - G.size) + "px)" }, { transform: "none" }], { duration: 600, easing: "cubic-bezier(.3,.6,.4,1)" });
         HW.audio.sfx("woodblock"); g.bounce(b);
         g.show(NUMS[n], 1600); g.busy = false; await g.say(NUMS[n]);
-        if (blocks.length === 5 && state === "build") {
+        if (last && state === "build") {
           state = "wait"; await g.praise(blocks[4]);
           state = "done"; blocks.forEach(function (x) { g.glow(x, true, true); });
         }
@@ -224,7 +228,8 @@
         HW.audio.sfx("whoosh", 0.9); g.show("whoosh"); g.say("whoosh");
         await Promise.all(blocks.map(function (b, i) {
           /* each block lands on the floor beside the others, flat on one of its sides */
-          var tx = (i - 2) * G.size * 1.2 + HW.rand(-8, 8), ty = i * G.size, rot = HW.pick([-90, 0, 90]) + HW.rand(-5, 5);
+          var step = Math.min(G.size * 1.2, (G.s.w - G.size - 24) / 4);
+          var tx = (i - 2) * step + HW.rand(-6, 6), ty = i * G.size, rot = HW.pick([-90, 0, 90]) + HW.rand(-5, 5);
           return g.anim(b, [{ transform: "none" }, { transform: "translate(" + tx + "px," + ty + "px) rotate(" + rot + "deg)" }], { duration: 800 + i * 90, easing: "cubic-bezier(.5,0,.7,1)" });
         }));
         HW.audio.sfx("woodblock");
@@ -267,7 +272,7 @@
         var sl = slots[filled], key = ITEMS[round % ITEMS.length];
         sl.classList.remove("glow-soft"); sl.classList.add("filled");
         var p = HW.picture(key); p.style.cssText = "width:84%;height:84%;margin:8%"; sl.appendChild(p);
-        g.anim(p, [{ scale: ".3", opacity: 0 }, { scale: "1", opacity: 1 }], { duration: 450, always: true });
+        g.anim(p, [{ scale: ".3", opacity: 0 }, { scale: "1", opacity: 1 }], { duration: 450 });
         HW.audio.sfx("note", 2 + filled); filled++;
         if (filled < num) slots[filled].classList.add("glow-soft");
         g.show(NUMS[filled - 1], 1600);
@@ -314,11 +319,12 @@
       }
       function show() {
         var L = LETTERS[i]; shown = false;
+        if (letter.getAnimations) letter.getAnimations().forEach(function (a) { a.cancel(); });
         letter.textContent = L[0]; letter.style.color = LETTER_COLS[i % LETTER_COLS.length];
         letter.setAttribute("aria-label", "Letter " + L[0]);
         pic.innerHTML = ""; pic.style.visibility = "hidden";
         g.glow(letter, true, true);
-        g.anim(letter, [{ transform: "scale(.6)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 450 });
+        g.anim(letter, [{ transform: "scale(.6)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 450, fill: "none" });
       }
       function reveal() {
         var L = LETTERS[i];
@@ -333,12 +339,14 @@
           g.name(L[1]).then(function () { if (reveals % 5 === 0) g.praise(pic); });
         } else { g.bounce(pic); g.name(L[1]); }
       }
-      g.tap(letter, function () { g.bounce(letter); reveal(); }, 600);
+      var changing = false;
+      g.tap(letter, function () { if (changing) return; g.bounce(letter); reveal(); }, 600);
       g.tap(pic, function () { if (shown) { g.bounce(pic); g.name(LETTERS[i][1]); } }, 600);
       g.tap(next, async function () {
-        HW.audio.sfx("click");
+        if (changing) return;
+        changing = true; HW.audio.sfx("click");
         await g.anim(letter, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 });
-        i = (i + 1) % LETTERS.length; show();
+        i = (i + 1) % LETTERS.length; show(); changing = false;
       }, 700);
       show();
     }
@@ -364,7 +372,7 @@
         big = g.el("button", "abs big-letter glow-soft");
         big.style.cssText = "width:" + bs + "px;height:" + bs + "px;left:" + (s.w / 2 - bs / 2) + "px;top:" + (s.h * (portrait(g) ? 0.56 : 0.62) - bs / 2) + "px;font-size:" + bs * 0.72 + "px;color:" + COLS[(k + rounds) % COLS.length];
         big.textContent = NAME[k]; big.setAttribute("aria-label", "Letter " + NAME[k]);
-        g.anim(big, [{ transform: "scale(.5)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 400 });
+        g.anim(big, [{ transform: "scale(.5)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 400, fill: "none" });
         g.tap(big, place, 500);
       }
       async function place() {
@@ -407,8 +415,8 @@
       c1.appendChild(HW.svgEl(A.cloud())); c2.appendChild(HW.svgEl(A.cloud()));
       var rainbow = HW.el("div", "wx-arc", win); rainbow.appendChild(HW.svgEl(A.rainbow()));
       var rain = HW.el("div", "wx-layer wxl-rain rain-drops", win), snow = HW.el("div", "wx-layer wxl-snow", win), wind = HW.el("div", "wx-layer wxl-wind", win);
-      for (var i = 0; i < 22; i++) { var d = HW.el("i", "", rain); d.style.cssText = "left:" + HW.rand(2, 98) + "%;animation-delay:-" + HW.rand(0, 1.2).toFixed(2) + "s;animation-duration:" + HW.rand(0.9, 1.3).toFixed(2) + "s"; }
-      for (i = 0; i < 16; i++) { var f = HW.svgEl(A.snowflake()); var z = HW.rand(14, 26); f.style.cssText = "left:" + HW.rand(2, 94) + "%;width:" + z + "px;height:" + z + "px;animation-delay:-" + HW.rand(0, 7).toFixed(1) + "s;animation-duration:" + HW.rand(6, 9).toFixed(1) + "s"; snow.appendChild(f); }
+      for (var i = 0; i < 22; i++) { var d = HW.el("i", "", rain); d.style.cssText = "--y:" + HW.rand(5, 85).toFixed(0) + "%;left:" + HW.rand(2, 98) + "%;animation-delay:-" + HW.rand(0, 1.2).toFixed(2) + "s;animation-duration:" + HW.rand(0.9, 1.3).toFixed(2) + "s"; }
+      for (i = 0; i < 16; i++) { var f = HW.svgEl(A.snowflake()); var z = HW.rand(14, 26); f.style.cssText = "--y:" + HW.rand(5, 80).toFixed(0) + "%;left:" + HW.rand(2, 94) + "%;width:" + z + "px;height:" + z + "px;animation-delay:-" + HW.rand(0, 7).toFixed(1) + "s;animation-duration:" + HW.rand(6, 9).toFixed(1) + "s"; snow.appendChild(f); }
       [0, 1].forEach(function (j) { var l = HW.svgEl(A.windLines()); l.style.cssText = "top:" + (18 + j * 30) + "%;animation-delay:-" + j * 1.4 + "s"; wind.appendChild(l); });
       var hill = HW.el("div", "wx-hill", win); hill.appendChild(HW.svgEl(A.hillTree())); hill.firstChild.setAttribute("preserveAspectRatio", "none");
       var snowCap = HW.el("div", "wx-snowcap", win);
@@ -447,7 +455,7 @@
       cloud.style.cssText = "left:" + (s.w / 2 - cw / 2) + "px;top:2%;width:" + cw + "px;height:" + cw * 0.62 + "px;z-index:3";
       cloud.appendChild(HW.svgEl(A.greyCloud()));
       var rain = g.el("div", "abs puddle-rain rain-drops"); rain.style.cssText = "left:" + (s.w / 2 - cw * 0.4) + "px;top:" + (s.h * 0.02 + cw * 0.5) + "px;width:" + cw * 0.8 + "px;height:" + s.h * 0.45 + "px;--d:" + s.h * 0.45 + "px";
-      for (var i = 0; i < 12; i++) { var d = HW.el("i", "", rain); d.style.cssText = "left:" + HW.rand(4, 96) + "%;animation-delay:-" + HW.rand(0, 1.4).toFixed(2) + "s;animation-duration:" + HW.rand(1.1, 1.6).toFixed(2) + "s"; }
+      for (var i = 0; i < 12; i++) { var d = HW.el("i", "", rain); d.style.cssText = "--y:" + HW.rand(5, 85).toFixed(0) + "%;left:" + HW.rand(4, 96) + "%;animation-delay:-" + HW.rand(0, 1.4).toFixed(2) + "s;animation-duration:" + HW.rand(1.1, 1.6).toFixed(2) + "s"; }
       var pw = Math.min(s.w * 0.31, 260), ph = Math.max(72, pw * 0.36), puddles = [];
       [0.18, 0.5, 0.82].forEach(function (x, j) {
         var p = g.el("button", "abs puddle glow-soft"); p.setAttribute("aria-label", "Puddle");
@@ -463,12 +471,15 @@
         var c = g.centre(p), bw = pw * 0.62;
         var boots = g.el("div", "abs"); boots.style.cssText = "left:" + (c.x - bw / 2) + "px;top:" + (c.y - bw * 0.6) + "px;width:" + bw + "px;height:" + bw * 0.63 + "px;z-index:4;pointer-events:none";
         boots.appendChild(HW.svgEl(A.wellies()));
-        await g.anim(boots, [{ transform: "translateY(-" + bw + "px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 420, easing: "ease-in", always: true });
-        HW.audio.sfx("splash"); g.anim(p, [{ scale: "1" }, { scale: "1.12" }, { scale: "1" }], { duration: 500, always: true });
-        for (var k = 0; k < 10; k++) {
+        await g.anim(boots, [{ transform: "translateY(-" + bw + "px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 420, easing: "ease-in" });
+        HW.audio.sfx("splash"); g.anim(p, [{ scale: "1" }, { scale: "1.12" }, { scale: "1" }], { duration: 500 });
+        for (var k = 0; k < (HW.reducedMotion() ? 0 : 10); k++) {
           var dr = g.el("div", "abs drop"); var dz = HW.rand(10, 18);
           dr.style.cssText = "left:" + (c.x - dz / 2) + "px;top:" + (c.y - dz / 2) + "px;width:" + dz + "px;height:" + dz + "px";
           var ang = Math.PI * (0.1 + 0.8 * k / 9), dist = HW.rand(pw * 0.4, pw * 0.75);
+          /* keep every drop on the screen */
+          var room = Math.cos(ang) > 0 ? c.x - 8 : s.w - c.x - 8;
+          if (Math.abs(Math.cos(ang)) > 0.05) dist = Math.min(dist, room / Math.abs(Math.cos(ang)));
           (function (el, dx, dy) {
             g.anim(el, [{ transform: "translate(0,0)", opacity: 1 }, { transform: "translate(" + dx * 0.6 + "px," + (dy - 30) + "px)", opacity: 1, offset: 0.5 }, { transform: "translate(" + dx + "px," + (dy * 0.2) + "px)", opacity: 0 }],
               { duration: 800, easing: "ease-out", always: true }).then(function () { el.remove(); });
@@ -478,7 +489,7 @@
         g.show("splash", 1500);
         var talk = g.say("splash");
         await g.wait(600);
-        await g.anim(boots, [{ transform: "none", opacity: 1 }, { transform: "translateY(-" + bw * 0.6 + "px)", opacity: 0 }], { duration: 450, always: true });
+        await g.anim(boots, [{ transform: "none", opacity: 1 }, { transform: "translateY(-" + bw * 0.6 + "px)", opacity: 0 }], { duration: 450 });
         boots.remove();
         await talk;
         if (splashes % 4 === 0) await g.praise(p);
@@ -492,7 +503,7 @@
   /* ================= 34 Colouring ================= */
   HW.registerGame({
     id: "colouring", title: "Colouring", desc: "Pick a colour, then tap the picture",
-    world: "art", worlds: ["art", "dinner"], bg: "kitchen", voice: PALETTE.concat(A.COLOURING_ORDER),
+    world: "art", worlds: ["art", "dinner"], bg: "kitchen", voice: PALETTE.concat(A.COLOURING_ORDER), keepOnResize: true,
     icon: function () { return HW.img("palette"); },
     start: function (g) {
       var pi = 0, colour = PALETTE[0], pic = null, praised = false;
@@ -500,15 +511,20 @@
       var next = cornerButton(g, grid, "Next picture", HW.icons.arrow); next.classList.add("go");
       function show() {
         if (pic) pic.remove();
-        var key = A.COLOURING_ORDER[pi % A.COLOURING_ORDER.length], W = picArea(g, grid);
+        var key = A.COLOURING_ORDER[pi % A.COLOURING_ORDER.length];
         pic = g.el("div", "abs colour-pic");
-        pic.style.cssText = "left:" + W.x + "px;top:" + W.y + "px;width:" + W.w + "px;height:" + W.h + "px";
+        place();
         pic.appendChild(HW.svgEl(A.COLOURING[key]()));
         praised = false; next.classList.remove("glow");
         g.anim(pic, [{ opacity: 0 }, { opacity: 1 }], { duration: 500 });
         g.tap(pic, function (ev) { fill(ev); }, 120);
         g.later(300, function () { g.name(key); });
       }
+      function place() {
+        var W = picArea(g, grid);
+        pic.style.cssText = "left:" + W.x + "px;top:" + W.y + "px;width:" + W.w + "px;height:" + W.h + "px";
+      }
+      g.onResize(function () { grid.layout(); next.layout(); if (pic) place(); });
       function fill(ev) {
         var t = ev.target && ev.target.closest ? ev.target.closest(".cz") : null;
         if (!t) {
@@ -555,14 +571,15 @@
         var old = null;
         if (cv.width && cv.height) { old = document.createElement("canvas"); old.width = cv.width; old.height = cv.height; old.getContext("2d").drawImage(cv, 0, 0); }
         cv.width = w; cv.height = h;
-        if (old) ctx.drawImage(old, 0, 0, w, h);
+        if (old) ctx.drawImage(old, 0, 0);
       }
       size();
       var onResize = function () { size(); };
       window.addEventListener("resize", onResize);
       g.onCleanup(function () { window.removeEventListener("resize", onResize); });
+      g.onResize(function () { size(); grid.layout(); clear.layout(); });
       function width() { var r = g.stage.getBoundingClientRect(); return Math.max(10, Math.min(24, Math.min(r.width, r.height) * 0.035)) * dpr; }
-      function pt(ev) { var r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) * dpr, y: (ev.clientY - r.top) * dpr }; }
+      function pt(ev) { var r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) * (cv.width / r.width), y: (ev.clientY - r.top) * (cv.height / r.height) }; }
       function stroke(a, b, c) {
         ctx.save();
         ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = width();
@@ -602,19 +619,20 @@
   /* ================= 36 Stamp pictures ================= */
   HW.registerGame({
     id: "stamps", title: "Stamp pictures", desc: "Pick a stamp, then tap to stamp it anywhere",
-    world: "art", worlds: ["art", "dinner", "planets", "cars"], bg: "kitchen", voice: ["saturn", "car", "clownfish", "apple", "star", "rocket"],
+    world: "art", worlds: ["art", "dinner", "planets", "cars"], bg: "kitchen", voice: ["saturn", "car", "clownfish", "apple", "star", "rocket"], keepOnResize: true,
     icon: function () { return HW.img("rocket"); },
     start: function (g) {
       var STAMPS = ["saturn", "car", "clownfish", "apple", "star", "rocket"], pick = STAMPS[0], live = [], count = 0;
       var grid = potGrid(g, STAMPS, function (k) { return HW.picture(k); }, function (k) { pick = k; g.name(k); });
       var clear = cornerButton(g, grid, "Clear the picture", HW.img("sponge"));
+      g.onResize(function () { grid.layout(); clear.layout(); });
       g.tap(g.stage, function (ev) {
         if (ev.target.closest && ev.target.closest("button, .pot-grid")) return;
         var s = g.size(), x = (ev.clientX || 0) - s.left, y = (ev.clientY || 0) - s.top;
         var z = Math.max(64, Math.min(150, Math.min(s.w, s.h) * 0.22));
         var st = g.el("div", "abs stamp"); st.style.cssText = "left:" + (x - z / 2) + "px;top:" + (y - z / 2) + "px;width:" + z + "px;height:" + z + "px;rotate:" + HW.rand(-12, 12).toFixed(0) + "deg";
         st.appendChild(HW.picture(pick));
-        g.anim(st, [{ scale: "1.5", opacity: 0 }, { scale: "1", opacity: 1 }], { duration: 260, easing: "ease-out", always: true });
+        g.anim(st, [{ scale: "1.5", opacity: 0 }, { scale: "1", opacity: 1 }], { duration: 260, easing: "ease-out" });
         HW.audio.sfx("stamp"); live.push(st); count++;
         if (live.length > 40) { var old = live.shift(); g.anim(old, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, always: true }).then(function () { old.remove(); }); }
         if (count === 1 || count % 10 === 0) g.name(pick);

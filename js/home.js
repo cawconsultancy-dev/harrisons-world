@@ -268,7 +268,7 @@
 
     card("Games");
     row("Pictures to choose from", "In matching games", seg("choices", [[2, "2"], [3, "3"]]));
-    row("Count up to", "In the counting games", seg("countTo", [[3, "3"], [5, "5"]]));
+    row("Count up to", "In Count with me, Fish home, and Number pictures", seg("countTo", [[3, "3"], [5, "5"]]));
     row("Movement", "Less movement if he finds it too busy", seg("motion", [["normal", "Normal"], ["reduced", "Less"]]));
     var sel = HW.el("select");
     var o0 = HW.el("option", "", sel); o0.value = "auto"; o0.textContent = "Changes each day";
@@ -297,17 +297,17 @@
       "Copy what he does and enjoy it with him. There is no right or wrong way to play.",
       "In Ready, steady, go!, wait after \u201csteady\u201d so he can say \u201cgo\u201d before you tap.",
       "Use More and All done in real life too, at snack time and bath time.",
-      "At the table, the Dinner time world has calm games he can play with one finger. Turn off Spoken words for a quieter meal.",
-      "UK guidance for 2 to 5 year olds is no more than an hour of screen time a day, and no screens in the hour before bed.",
-      "This is a play app for fun and gentle learning, not therapy."
+      "The Dinner time world gathers the calmest games, which need only one finger. Turn off Spoken words for a quieter time.",
+      "UK guidance for 2 to 5 year olds is no more than an hour of screen time a day, no screens at mealtimes, and none in the hour before bed.",
+      "This is a play app for fun and gentle learning."
     ]);
 
     card("Share with another family");
-    para("Know a child who'd enjoy these? Send them the link. It works on any tablet, phone, or computer.");
+    para("Know a child who'd enjoy these? Send them the link. It works on most up-to-date tablets, phones, and computers.");
     var url = location.href.split("#")[0].split("?")[0].replace(/index\.html$/, "");
     var sh = HW.el("button", "gu-btn", cur); sh.innerHTML = SHARE_ICON + "<span>Share the games</span>";
     HW.onPress(sh, function () {
-      var data = { title: "Harrison's World", text: "Calm, simple games for little ones. Free, with no adverts, and it works offline.", url: url };
+      var data = { title: "Harrison's World", text: "Calm, simple games for little ones. Free, with no adverts, and once opened it works offline on most tablets.", url: url };
       if (navigator.share) { navigator.share(data).catch(function () {}); return; }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(function () { showHint("Link copied"); }, function () { showHint("Copy the link below"); });
@@ -353,7 +353,7 @@
     card("About");
     var credits = HW.el("p", "", cur);
     credits.textContent = "Version " + HW.version + ". Music is composed by the app as it plays. Words are spoken by a computer voice (Kokoro, Apache 2.0 licence). " +
-      "Fruit, veg, and some vehicle, letter, and weather pictures are Twemoji by Twitter, Inc and other contributors, licensed under CC-BY 4.0. Font: Fredoka, SIL Open Font Licence. All other drawings are original.";
+      "Fruit, veg, and the other emoji-style pictures are Twemoji by Twitter, Inc and other contributors, licensed under CC-BY 4.0. Font: Fredoka, SIL Open Font Licence. The planets, car, alien, comet, sea animals, shapes, blocks, weather scenes, and colouring pictures are original drawings.";
   }
 
   function offlineStatus(el) {
@@ -378,7 +378,9 @@
       var turned = (window.innerWidth < window.innerHeight) !== (lastW < lastH);
       var big = Math.abs(window.innerWidth - lastW) > 80 || Math.abs(window.innerHeight - lastH) > 160;
       lastW = window.innerWidth; lastH = window.innerHeight;
-      if (current === "game" && currentDef && !currentDef.keepOnResize && (turned || big)) renderGame(currentDef);
+      if (current !== "game" || !currentDef || !(turned || big)) return;
+      if (currentDef.keepOnResize && kit) kit.resizers.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } });
+      else renderGame(currentDef);
     }, 450);
   });
 

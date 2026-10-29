@@ -311,12 +311,12 @@ body.reduce-motion .sway { animation: none; }
 .gu-row .lbl { font-size: 18px; font-weight: 600; }
 .gu-row .sub { font-size: 14px; color: #5b6390; font-weight: 500; }
 .seg { display: flex; background: #e3e7f6; border-radius: 14px; padding: 4px; flex: none; }
-.seg button { padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 16px; color: #3b4473; min-width: 60px; }
+.seg button { padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 16px; color: #3b4473; min-width: 64px; min-height: 52px; }
 .seg button.on { background: #1b2350; color: #fff; }
-.switch { width: 64px; height: 38px; border-radius: 19px; background: #c6cbe2; position: relative; flex: none; transition: background .2s; }
-.switch::after { content: ""; position: absolute; left: 4px; top: 4px; width: 30px; height: 30px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.switch { width: 80px; height: 48px; border-radius: 24px; background: #c6cbe2; position: relative; flex: none; transition: background .2s; }
+.switch::after { content: ""; position: absolute; left: 5px; top: 5px; width: 38px; height: 38px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 .switch.on { background: #3f9b62; }
-.switch.on::after { transform: translateX(26px); }
+.switch.on::after { transform: translateX(32px); }
 .gu-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 .gu-game { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px; padding: 10px 12px; text-align: left; font-size: 17px; font-weight: 600; }
 .gu-game .gi { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: none; }
@@ -324,7 +324,7 @@ body.reduce-motion .sway { animation: none; }
 .gu-game .tick { margin-left: auto; width: 30px; height: 30px; border-radius: 8px; border: 2px solid #b8bfdc; display: grid; place-items: center; flex: none; }
 .gu-game.on .tick { background: #3f9b62; border-color: #3f9b62; }
 .gu-game.on .tick::after { content: ""; width: 8px; height: 15px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -2px); }
-.gu select { font: inherit; font-size: 16px; padding: 10px; border-radius: 12px; border: 2px solid #c6cbe2; background: #fff; max-width: 220px; }
+.gu select { font: inherit; font-size: 16px; padding: 10px; min-height: 56px; border-radius: 12px; border: 2px solid #c6cbe2; background: #fff; max-width: 220px; }
 .gu small { color: #5b6390; font-size: 14px; }
 .status-ok { color: #2f7d4b; font-weight: 600; }
 .status-wait { color: #8a6a12; font-weight: 600; }
@@ -455,8 +455,10 @@ body.reduce-motion .twinkle-star { animation: none; opacity: .85; }
 .drop { border-radius: 50%; background: #7cb9e8; pointer-events: none; z-index: 5; }
 body.reduce-motion .rain-drops i, body.reduce-motion .wxl-snow svg, body.reduce-motion .wxl-wind svg,
 body.reduce-motion .wx-window .wx-cloud, body.reduce-motion .wx-tree, body.reduce-motion .sun-rays { animation: none !important; }
+body.reduce-motion .rain-drops i, body.reduce-motion .wxl-snow svg { top: var(--y, 40%); }
 @media (prefers-reduced-motion: reduce) {
   .rain-drops i, .wxl-snow svg, .wxl-wind svg, .wx-window .wx-cloud, .wx-tree, .sun-rays { animation: none !important; }
+  .rain-drops i, .wxl-snow svg { top: var(--y, 40%); }
 }
 
 /* grown-ups cards */

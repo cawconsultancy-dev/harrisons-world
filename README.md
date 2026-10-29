@@ -25,8 +25,8 @@ No accounts, adverts, cookies, analytics, tracking, microphone, or links to othe
 
 ## Credits and licences
 
-- Planet, car, alien, sea animal, weather, colouring, and prop drawings: original to this app.
-- Fruit, veg, and some vehicle, letter, and weather pictures: [Twemoji](https://github.com/jdecked/twemoji) by Twitter, Inc and other contributors, licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- Planets, car, alien, comet, sea animals, shapes, blocks, weather scenes, and colouring pictures: original drawings for this app.
+- Fruit, veg, and the other emoji-style pictures: [Twemoji](https://github.com/jdecked/twemoji) by Twitter, Inc and other contributors, licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - Font: Fredoka, licensed under the SIL Open Font Licence 1.1 (see `fonts/OFL.txt`).
 - Spoken words: recorded with the Kokoro text-to-speech model (Apache 2.0 licence). The slower copies are the same recordings, stretched to 85% speed with the pitch unchanged.
 - Music: composed live by the app in the browser.
