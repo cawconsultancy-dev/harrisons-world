@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   var HW = window.HW, A = HW.art, app = document.getElementById("app");
-  var current = null, kit = null, inGame = false, pushedGame = false;
+  var current = null, kit = null, inGame = false, pushedGame = false, currentDef = null;
 
   var WORLDS = [
     { id: "all", key: "w_all", label: "All games", icon: function () { return HW.img("sparkles"); } },
@@ -10,8 +10,14 @@
     { id: "fruitveg", key: "w_fruitveg", label: "Fruit and veg", icon: function () { return HW.img("apple"); } },
     { id: "cars", key: "w_cars", label: "Cars", icon: function () { return HW.svgEl(A.car(A.COLOURS.red)); } },
     { id: "sea", key: "w_sea", label: "Sea", icon: function () { return HW.svgEl(A.clownfish()); } },
+    { id: "shapes", key: "w_shapes", label: "Shapes", icon: function () { return HW.svgEl(A.shape2("heart", "#fff")); } },
+    { id: "numbers", key: "w_numbers", label: "Numbers", icon: function () { return HW.svgEl(A.wordIcon("123")); } },
+    { id: "letters", key: "w_letters", label: "Letters", icon: function () { return HW.svgEl(A.wordIcon("abc")); } },
+    { id: "weather", key: "w_weather", label: "Weather", icon: function () { return HW.img("rainbow"); } },
+    { id: "art", key: "w_art", label: "Art time", icon: function () { return HW.img("palette"); } },
     { id: "music", key: "w_music", label: "Music", icon: function () { return HW.img("note"); } },
-    { id: "calm", key: "w_calm", label: "Calm", icon: function () { return HW.svgEl(A.sleepyMoon()); } }
+    { id: "calm", key: "w_calm", label: "Calm", icon: function () { return HW.svgEl(A.sleepyMoon()); } },
+    { id: "dinner", key: "w_dinner", label: "Dinner time", icon: function () { return HW.img("plate"); } }
   ];
   var worldFilter = "all";
 
@@ -32,7 +38,8 @@
   function heroOrbit(badgeEl) {
     var orbit = HW.el("div", "orbit");
     HW.el("div", "orbit-ring", orbit);
-    var dw = HW.el("div", "orbit-dot-wrap", orbit); HW.el("div", "orbit-dot", dw);
+    var dw = HW.el("div", "orbit-dot-wrap", orbit);
+    var comet = HW.el("div", "orbit-comet", dw); comet.appendChild(HW.svgEl(A.comet()));
     var circ = HW.el("div", "hero-circle", orbit);
     circ.appendChild(HW.svgEl(A.planet("earth")));
     if (badgeEl) { var b = HW.el("div", "hero-badge", orbit); b.appendChild(badgeEl); }
@@ -92,23 +99,16 @@
 
   function worldClass(id) { return "w-" + id; }
 
-  /* ---------- start screen: Hello, Harrison ---------- */
-  function renderStart() {
-    clear(); current = "start";
-    var s = HW.el("div", "screen start stars-bg fade-in", app);
-    var corner = HW.el("div", "start-corner", s); corner.appendChild(musicButton());
-    s.appendChild(heroOrbit(null));
-    var t = HW.el("div", "start-title", s); t.textContent = "Harrison's World";
-    var play = HW.el("button", "play-btn", s);
-    play.innerHTML = '<span class="play-ico">' + HW.icons.play + "</span><span>Play</span>";
-    play.setAttribute("aria-label", "Play");
-    HW.onPress(play, function () {
-      HW.audio.unlock();
-      HW.audio.say("hello");
-      HW.audio.preload(["w_all", "w_planets", "w_fruitveg", "w_cars", "w_sea", "w_music", "w_calm"].concat(HW.games.map(function (g) { return "g_" + g.id; })));
-      setTimeout(function () { HW.go("home"); }, 1300);
-    }, 1500);
-  }
+  /* The app opens straight onto the games. Tablets only allow sound after a tap,
+     so the music starts with his first tap and the spoken words load then too. */
+  var preloaded = false;
+  document.addEventListener("pointerup", function () {
+    setTimeout(function () {
+      if (preloaded || !HW.audio.isStarted()) return;
+      preloaded = true;
+      HW.audio.preload(WORLDS.map(function (w) { return w.key; }).concat(HW.games.map(function (g) { return "g_" + g.id; })));
+    }, 60);
+  }, true);
 
   /* ---------- home screen ---------- */
   function renderHome() {
@@ -120,10 +120,11 @@
       var hero = HW.el("div", "hero", s);
       var badge = tg.icon();
       hero.appendChild(heroOrbit(badge));
-      HW.el("div", "hero-kicker", hero, "Today's game");
-      HW.el("div", "hero-title", hero).textContent = tg.title;
-      HW.el("div", "hero-sub", hero).textContent = tg.desc;
-      var play = HW.el("button", "play-btn", hero);
+      var ht = HW.el("div", "hero-text", hero);
+      HW.el("div", "hero-kicker", ht, "Today's game");
+      HW.el("div", "hero-title", ht).textContent = tg.title;
+      HW.el("div", "hero-sub", ht).textContent = tg.desc;
+      var play = HW.el("button", "play-btn", ht);
       play.innerHTML = '<span class="play-ico">' + HW.icons.play + "</span><span>Play</span>";
       HW.onPress(play, function () { startGame(tg); }, 1200);
     }
@@ -182,7 +183,7 @@
   }
 
   function renderGame(def) {
-    clear(); current = "game"; inGame = true;
+    clear(); current = "game"; inGame = true; currentDef = def;
     var s = HW.el("div", "screen game-screen fade-in", app);
     var bar = HW.el("div", "topbar", s);
     var home = HW.el("button", "round-btn", bar); home.innerHTML = HW.icons.home; home.setAttribute("aria-label", "All done, go home");
@@ -207,11 +208,8 @@
     if (pushedGame) { pushedGame = false; try { history.back(); return; } catch (e) {} }
     renderHome();
   };
-  HW.goStart = function () {
-    inGame = false;
-    if (pushedGame) { pushedGame = false; try { history.replaceState(null, "", "#"); } catch (e) {} }
-    renderStart();
-  };
+  /* Sleepy moon's "Bye bye" ends on the games page too */
+  HW.goStart = function () { HW.leaveGame(); };
 
   window.addEventListener("popstate", function () {
     var h = location.hash || "";
@@ -220,6 +218,7 @@
   });
 
   /* ---------- grown-ups area ---------- */
+  var SHARE_ICON = '<svg viewBox="0 0 48 48"><circle cx="35" cy="11" r="6" fill="none" stroke="#fff" stroke-width="4"/><circle cx="13" cy="24" r="6" fill="none" stroke="#fff" stroke-width="4"/><circle cx="35" cy="37" r="6" fill="none" stroke="#fff" stroke-width="4"/><path d="M18 21l12-7M18 27l12 7" stroke="#fff" stroke-width="4"/></svg>';
   function renderGrownUps() {
     clear(); current = "grownups";
     var s = HW.el("div", "screen scroll gu fade-in", app);
@@ -227,11 +226,13 @@
     HW.el("h1", "", head).textContent = "Grown-ups";
     var close = HW.el("button", "gu-close", head); close.textContent = "Back to games";
     HW.onPress(close, function () { renderHome(); }, 600);
-    var body = HW.el("div", "gu-body", s);
+    var body = HW.el("div", "gu-body", s), cur = body;
 
-    function section(t) { HW.el("h2", "", body).textContent = t; }
+    function card(t) { cur = HW.el("div", "gu-card", body); HW.el("h2", "", cur).textContent = t; return cur; }
+    function para(t) { var p = HW.el("p", "", cur); p.textContent = t; return p; }
+    function list(items) { var ul = HW.el("ul", "", cur); items.forEach(function (t) { HW.el("li", "", ul).textContent = t; }); return ul; }
     function row(label, sub, control) {
-      var r = HW.el("div", "gu-row", body);
+      var r = HW.el("div", "gu-row", cur);
       var l = HW.el("div", "", r); HW.el("div", "lbl", l).textContent = label;
       if (sub) HW.el("div", "sub", l).textContent = sub;
       r.appendChild(control); return r;
@@ -259,15 +260,15 @@
       return w;
     }
 
-    section("Sound");
+    card("Sound");
     row("Music", "Calm music plays on every screen", toggle("music", HW.audio.applyMusic));
     row("Music volume", null, seg("musicVol", [["quiet", "Quiet"], ["medium", "Medium"]], HW.audio.applyMusic));
     row("Spoken words", "Emma says each word", toggle("voice"));
     row("Sound effects", "Soft taps, notes, and chimes", toggle("sfx"));
 
-    section("Games");
+    card("Games");
     row("Pictures to choose from", "In matching games", seg("choices", [[2, "2"], [3, "3"]]));
-    row("Count up to", "In Count with me", seg("countTo", [[3, "3"], [5, "5"]]));
+    row("Count up to", "In the counting games", seg("countTo", [[3, "3"], [5, "5"]]));
     row("Movement", "Less movement if he finds it too busy", seg("motion", [["normal", "Normal"], ["reduced", "Less"]]));
     var sel = HW.el("select");
     var o0 = HW.el("option", "", sel); o0.value = "auto"; o0.textContent = "Changes each day";
@@ -276,9 +277,9 @@
     sel.addEventListener("change", function () { HW.settings.today = sel.value; HW.saveSettings(); });
     row("Today's game", "The big game on the home screen", sel);
 
-    section("Which games show");
-    HW.el("p", "", body).textContent = "Fewer games means fewer choices for him. Tap a game to show or hide it.";
-    var gl = HW.el("div", "gu-games", body);
+    card("Which games show");
+    para("Fewer games means fewer choices for him. Tap a game to show or hide it.");
+    var gl = HW.el("div", "gu-games", cur);
     HW.games.forEach(function (g) {
       var b = HW.el("button", "gu-game" + (HW.settings.hidden.indexOf(g.id) < 0 ? " on" : ""), gl);
       var gi = HW.el("div", "gi " + worldClass(g.world), b); gi.appendChild(g.icon());
@@ -290,38 +291,69 @@
       }, 300);
     });
 
-    section("Playing together");
-    var ul = HW.el("ul", "", body);
-    [
+    card("Playing together");
+    list([
       "Sit with him when you can. Say the word with Emma, then pause and give him time to try.",
       "Copy what he does and enjoy it with him. There is no right or wrong way to play.",
-      "In Ready, steady, go!, wait after “steady” so he can say “go” before you tap.",
+      "In Ready, steady, go!, wait after \u201csteady\u201d so he can say \u201cgo\u201d before you tap.",
       "Use More and All done in real life too, at snack time and bath time.",
+      "At the table, the Dinner time world has calm games he can play with one finger. Turn off Spoken words for a quieter meal.",
       "UK guidance for 2 to 5 year olds is no more than an hour of screen time a day, and no screens in the hour before bed.",
       "This is a play app for fun and gentle learning, not therapy."
-    ].forEach(function (t) { HW.el("li", "", ul).textContent = t; });
+    ]);
 
-    section("Put it on the home screen");
-    var ul2 = HW.el("ul", "", body);
-    [
-      "iPad: open this page in Safari, tap the Share button, then Add to Home Screen.",
-      "Android tablet: open this page in Chrome, tap the three-dot menu, then Install app or Add to Home screen.",
-      "Amazon Fire tablet: open this page in Silk and bookmark it. Fire tablets may not let it install or work offline.",
+    card("Share with another family");
+    para("Know a child who'd enjoy these? Send them the link. It works on any tablet, phone, or computer.");
+    var url = location.href.split("#")[0].split("?")[0].replace(/index\.html$/, "");
+    var sh = HW.el("button", "gu-btn", cur); sh.innerHTML = SHARE_ICON + "<span>Share the games</span>";
+    HW.onPress(sh, function () {
+      var data = { title: "Harrison's World", text: "Calm, simple games for little ones. Free, with no adverts, and it works offline.", url: url };
+      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { showHint("Link copied"); }, function () { showHint("Copy the link below"); });
+      } else showHint("Copy the link below");
+    }, 800);
+    var lk = HW.el("p", "gu-link", cur); lk.textContent = url;
+
+    card("Put it on the home screen");
+    var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+    if (standalone) para("You're using the installed app. It works offline too.");
+    else {
+      var ua = navigator.userAgent || "";
+      var ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      var fire = /Silk|KF[A-Z]{2,4}\b/.test(ua), android = /Android/.test(ua);
+      para(ios ? "On this iPad or iPhone: open this page in Safari, tap the Share button, then Add to Home Screen."
+        : fire ? "On this Fire tablet: open this page in Silk and bookmark it. Fire tablets may not let it install or work offline."
+        : android ? "On this tablet: open this page in Chrome, tap the three-dot menu, then Install app or Add to Home screen."
+        : "Open this page on his tablet, then add it to the home screen.");
+      if (HW.installPrompt) {
+        var ib = HW.el("button", "gu-btn", cur); ib.innerHTML = HW.icons.plus + "<span>Install the app</span>";
+        HW.onPress(ib, function () {
+          var ev = HW.installPrompt; HW.installPrompt = null; ib.remove();
+          ev.prompt(); if (ev.userChoice) ev.userChoice.catch(function () {});
+        }, 800);
+      }
+    }
+    list([
       "Open it once with internet so every game saves for offline play.",
       "To keep him in the app, search the tablet's Settings for Guided Access (iPad) or App pinning (Android).",
       "Works best on iPadOS 15 or later, or an up-to-date Android tablet with Chrome.",
       "No sound on an iPhone or older iPad? Check the silent switch and the volume buttons."
-    ].forEach(function (t) { HW.el("li", "", ul2).textContent = t; });
-    var off = HW.el("p", "", body); off.innerHTML = 'Offline: <span class="status-wait">checking…</span>';
+    ]);
+    var off = HW.el("p", "", cur); off.innerHTML = 'Offline: <span class="status-wait">checking\u2026</span>';
     offlineStatus(off.querySelector("span"));
 
-    section("Privacy");
-    HW.el("p", "", body).textContent = "Harrison's World has no accounts, adverts, cookies, tracking, microphone, or links to other websites. Your settings are saved only on this tablet. The website host (GitHub) keeps visitor IP addresses in its own security logs.";
+    card("Emma's voice");
+    para("Emma says every word, the same way each time and on every tablet. Slower gives him a little more time to listen. Tap a speed to hear it.");
+    row("Speed", null, seg("voiceSpeed", [["slower", "Slower"], ["normal", "Normal"]], function () { HW.audio.say("hello"); }));
 
-    section("About");
-    var credits = HW.el("p", "", body);
-    credits.innerHTML = "Version " + HW.version + ". Music is composed by the app as it plays. Words are spoken by a computer voice (Kokoro, Apache 2.0 licence). " +
-      "Fruit, veg, and some vehicle pictures are Twemoji by Twitter, Inc and other contributors, licensed under CC-BY 4.0. Font: Fredoka, SIL Open Font Licence. Planet, car, alien, and sea animal drawings are original.";
+    card("Privacy");
+    para("Harrison's World has no accounts, adverts, cookies, tracking, microphone, or links to other websites. Your settings are saved only on this tablet. The website host (GitHub) keeps visitor IP addresses in its own security logs.");
+
+    card("About");
+    var credits = HW.el("p", "", cur);
+    credits.textContent = "Version " + HW.version + ". Music is composed by the app as it plays. Words are spoken by a computer voice (Kokoro, Apache 2.0 licence). " +
+      "Fruit, veg, and some vehicle, letter, and weather pictures are Twemoji by Twitter, Inc and other contributors, licensed under CC-BY 4.0. Font: Fredoka, SIL Open Font Licence. All other drawings are original.";
   }
 
   function offlineStatus(el) {
@@ -337,17 +369,32 @@
     }).catch(function () { el.textContent = "unknown."; });
   }
 
+  /* if the tablet is turned round mid-game, start that game again so it fits the new shape
+     (small height changes from the browser's address bar are ignored) */
+  var lastW = window.innerWidth, lastH = window.innerHeight, resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      var turned = (window.innerWidth < window.innerHeight) !== (lastW < lastH);
+      var big = Math.abs(window.innerWidth - lastW) > 80 || Math.abs(window.innerHeight - lastH) > 160;
+      lastW = window.innerWidth; lastH = window.innerHeight;
+      if (current === "game" && currentDef && !currentDef.keepOnResize && (turned || big)) renderGame(currentDef);
+    }, 450);
+  });
+
   HW.startGameById = function (id) { if (HW.gameById[id]) startGame(HW.gameById[id]); };
   HW.go = function (screen) {
     if (screen === "home") { if (inGame && pushedGame) { HW.leaveGame(); return; } renderHome(); }
     else if (screen === "grownups") renderGrownUps();
-    else renderStart();
+    else renderHome();
   };
 
   /* ---------- boot ---------- */
+  /* keep the browser's own install banner away from small fingers; the grown-ups area offers it instead */
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); HW.installPrompt = e; });
   HW.saveSettings();
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  renderStart();
+  renderHome();
 
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", function () {

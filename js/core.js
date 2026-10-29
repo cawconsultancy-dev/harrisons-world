@@ -2,11 +2,11 @@
 (function () {
   "use strict";
   var HW = (window.HW = window.HW || {});
-  HW.version = "1.0.0";
+  HW.version = "1.1.0";
 
   /* ---------- settings: stored only on this tablet ---------- */
   var DEFAULTS = {
-    music: true, musicVol: "quiet", voice: true, sfx: true,
+    music: true, musicVol: "quiet", voice: true, voiceSpeed: "normal", sfx: true,
     choices: 2, countTo: 3, motion: "normal",
     hidden: [], today: "auto", recent: []
   };

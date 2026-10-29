@@ -13,6 +13,8 @@
     if (key === "car") return HW.svgEl(A.car(A.COLOURS.red));
     if (key === "star") return HW.svgEl(A.star());
     if (A.SEA && A.SEA[key]) return HW.svgEl(A.SEA[key]());
+    if (key === "fish") return HW.svgEl(A.genericFish(A.COLOURS.orange));
+    if (key === "igloo" || key === "queen" || key === "wellies") return HW.svgEl(A[key]());
     return HW.img(key);
   };
   function sizeBox(el, css) { el.style.cssText += ";" + css; return el; }

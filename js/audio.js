@@ -190,17 +190,19 @@
       if (p && p.then) p.then(res, rej);
     });
   }
+  /* Emma's words: normal speed in audio/v, a slower copy of each in audio/s */
   function loadVoice(key) {
-    if (buffers[key]) return Promise.resolve(buffers[key]);
-    if (pending[key]) return pending[key];
+    var path = (HW.settings.voiceSpeed === "slower" ? "audio/s/" : "audio/v/") + key + ".mp3";
+    if (buffers[path]) return Promise.resolve(buffers[path]);
+    if (pending[path]) return pending[path];
     if (!ctx) return Promise.reject(new Error("no audio"));
     var timeout = new Promise(function (_, rej) { setTimeout(function () { rej(new Error("slow " + key)); }, 4000); });
-    pending[key] = Promise.race([fetch("audio/v/" + key + ".mp3"), timeout])
+    pending[path] = Promise.race([fetch(path), timeout])
       .then(function (r) { if (!r.ok) throw new Error("missing " + key); return r.arrayBuffer(); })
       .then(decode)
-      .then(function (b) { buffers[key] = b; delete pending[key]; return b; })
-      .catch(function (e) { delete pending[key]; throw e; });
-    return pending[key];
+      .then(function (b) { buffers[path] = b; delete pending[path]; return b; })
+      .catch(function (e) { delete pending[path]; throw e; });
+    return pending[path];
   }
   function preload(keys) { if (ctx) keys.forEach(function (k) { loadVoice(k).catch(function () {}); }); }
 
@@ -286,7 +288,9 @@
     sparkle: function (t) { [89, 86, 84, 81].forEach(function (m, i) { bell(m, t + i * 0.09, 0.06, sfxBus, 1.2); }); },
     stir: function (t) { noise(t, 1.0, "bandpass", 600, 1.5, 0.05, 0.4); },
     grow: function (t) { [65, 69, 72, 77].forEach(function (m, i) { bell(m, t + i * 0.16, 0.09, sfxBus, 1.6); }); },
-    click: function (t) { tone("sine", 660, 600, t, 0.06, 0.06); }
+    click: function (t) { tone("sine", 660, 600, t, 0.06, 0.06); },
+    splash: function (t) { noise(t, 0.4, "lowpass", 1500, 0.8, 0.11, 0.005); for (var i = 0; i < 4; i++) tone("sine", HW.rand(500, 900), HW.rand(1100, 1600), t + 0.05 + i * 0.05, 0.07, 0.04); },
+    stamp: function (t) { tone("sine", 190, 90, t, 0.16, 0.22); noise(t, 0.05, "lowpass", 700, 0.7, 0.05); }
   };
 
   function sfx(name, arg) {

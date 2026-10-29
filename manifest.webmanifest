@@ -1,7 +1,7 @@
 {
   "name": "Harrison's World",
   "short_name": "Harrison's World",
-  "description": "Calm, simple games about planets, fruit and veg, cars, the sea, and music.",
+  "description": "Calm, simple games about planets, fruit and veg, cars, the sea, music, shapes, numbers, letters, weather, and colouring.",
   "start_url": "./",
   "scope": "./",
   "id": "./",
