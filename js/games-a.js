@@ -383,25 +383,30 @@
 
   /* 9 ---------------------------------------------------------------- */
   HW.registerGame({
-    id: "count", title: "Count with me", desc: "Tap each one into the basket: one, two, three",
-    world: "fruitveg", worlds: ["fruitveg", "cars"], bg: "kitchen", voice: ["one", "two", "three", "four", "five"],
+    id: "count", title: "Count with me", desc: "Tap each one into the basket and count all the way to ten",
+    world: "fruitveg", worlds: ["fruitveg", "cars", "numbers"], bg: "kitchen", voice: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"],
     icon: function () { return HW.img("strawberry"); },
     start: function (g) {
-      var NUMS = ["one", "two", "three", "four", "five"];
+      var NUMS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+      /* each round counts a little further, building up to ten */
+      var SIZES = [3, 5, 7, 10], need = 3;
       var themes = ["strawberry", "car", "carrot", "apple"], t = 0;
       var holder = null, items = [], count = 0;
       function build() {
         g.stage.querySelectorAll(".count-item,.count-holder").forEach(function (n) { n.remove(); });
-        var n = HW.settings.countTo, theme = themes[t % themes.length];
+        var n = need = SIZES[t % SIZES.length], theme = themes[t % themes.length];
         count = 0; items = [];
         holder = g.el("div", "abs count-holder"); holder.style.cssText = "left:50%;bottom:6%;transform:translateX(-50%);width:min(60vw,46vh,380px);aspect-ratio:" + (theme === "car" ? "260/230" : "260/170");
         holder.appendChild(HW.svgEl(theme === "car" ? A.garage() : A.basket()));
-        var w = Math.min(g.size().w * 0.86 / n, g.size().h * 0.26, 170) * (theme === "car" ? 1.3 : 1);
-        w = Math.min(w, g.size().w * 0.9 / n);
+        /* up to five in a row; six or more go in two rows */
+        var per = n > 5 ? Math.ceil(n / 2) : n, rows = Math.ceil(n / per), sz = g.size();
+        var w = Math.min(sz.w * 0.86 / per, sz.h * (rows > 1 ? 0.15 : 0.26), 170) * (theme === "car" ? 1.3 : 1);
+        w = Math.max(56, Math.min(w, sz.w * 0.9 / per));
         for (var i = 0; i < n; i++) {
           var b = g.el("button", "abs count-item");
-          var left = (100 / (n + 1)) * (i + 1);
-          b.style.cssText = "left:calc(" + left + "% - " + w / 2 + "px);top:14%;width:" + w + "px;height:" + w + "px";
+          var r = Math.floor(i / per), c = i % per, inRow = Math.min(per, n - r * per);
+          var left = (100 / (inRow + 1)) * (c + 1);
+          b.style.cssText = "left:calc(" + left + "% - " + w / 2 + "px);top:calc(" + (rows > 1 ? 5 : 14) + "% + " + r * (w + 10) + "px);width:" + w + "px;height:" + w + "px";
           b.appendChild(theme === "car" ? HW.svgEl(A.car(HW.pick(Object.keys(A.COLOURS).map(function (k) { return A.COLOURS[k]; })))) : HW.img(theme));
           b.setAttribute("aria-label", HW.word(theme));
           (function (btn) { g.tap(btn, function () { take(btn); }); })(b);
@@ -416,7 +421,7 @@
         HW.audio.sfx("note", 2 + my);
         g.show(NUMS[my - 1], 1800); g.say(NUMS[my - 1]);
         await g.flyToPoint(btn, h.x + HW.rand(-h.w * .2, h.w * .2), h.y - h.h * .05, 650, 0.55);
-        if (my === HW.settings.countTo) {
+        if (my === need) {
           g.busy = true;
           await g.wait(900);
           g.show(NUMS[my - 1]); await g.say(NUMS[my - 1]);

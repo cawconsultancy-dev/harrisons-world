@@ -268,7 +268,7 @@
 
     card("Games");
     row("Pictures to choose from", "In matching games", seg("choices", [[2, "2"], [3, "3"]]));
-    row("Count up to", "In Count with me, Fish home, and Number pictures", seg("countTo", [[3, "3"], [5, "5"]]));
+    row("Count up to", "In Fish home and Number pictures. Count with me always builds up to ten.", seg("countTo", [[3, "3"], [5, "5"]]));
     row("Movement", "Less movement if he finds it too busy", seg("motion", [["normal", "Normal"], ["reduced", "Less"]]));
     var sel = HW.el("select");
     var o0 = HW.el("option", "", sel); o0.value = "auto"; o0.textContent = "Changes each day";
