@@ -353,7 +353,7 @@
     card("About");
     var credits = HW.el("p", "", cur);
     credits.textContent = "Version " + HW.version + ". Music is composed by the app as it plays. Words are spoken by a computer voice (Kokoro, Apache 2.0 licence). " +
-      "Fruit, veg, and the other emoji-style pictures are Twemoji by Twitter, Inc and other contributors, licensed under CC-BY 4.0. Font: Fredoka, SIL Open Font Licence. The planets, car, alien, comet, sea animals, shapes, blocks, weather scenes, and colouring pictures are original drawings.";
+      "Fruit, veg, and the other emoji-style pictures are Twemoji by Twitter, Inc and other contributors, licensed under CC-BY 4.0. Font: Fredoka, SIL Open Font Licence. The planets, car, alien, comet, sea animals, shapes, blocks, weather scenes, feelings faces, the child to dress, and colouring pictures are original drawings.";
   }
 
   function offlineStatus(el) {

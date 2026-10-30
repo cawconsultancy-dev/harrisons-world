@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   var HW = (window.HW = window.HW || {});
-  HW.version = "1.1.0";
+  HW.version = "1.2.0";
 
   /* ---------- settings: stored only on this tablet ---------- */
   var DEFAULTS = {

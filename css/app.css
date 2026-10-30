@@ -468,3 +468,82 @@ body.reduce-motion .rain-drops i, body.reduce-motion .wxl-snow svg { top: var(--
 .gu-btn { display: inline-flex; align-items: center; gap: 12px; height: 64px; padding: 0 26px 0 18px; border-radius: 32px; background: #1b2350; color: #fff; font-weight: 700; font-size: 20px; margin: 6px 0 4px; box-shadow: 0 4px 0 #0e1433; }
 .gu-btn svg { width: 32px; height: 32px; }
 .gu-link { font-size: 15px !important; color: #5b6390 !important; word-break: break-all; -webkit-user-select: text; user-select: text; }
+
+/* ---------- stickers, strips, breathing, garden, patterns, sorting, feelings, dressing ---------- */
+.sticker-shelf { position: absolute; left: 10px; right: 10px; top: 8px; display: flex; flex-wrap: wrap; gap: 6px; z-index: 5; pointer-events: none; }
+.sticker { width: clamp(40px, 8vmin, 60px); height: clamp(40px, 8vmin, 60px); border-radius: 50%; background: rgba(255,255,255,.12); border: 2px solid rgba(255,216,107,.55); display: grid; place-items: center; transition: opacity .3s; }
+.sticker > * { width: 72%; height: 72%; }
+.sticker.fly { z-index: 9; pointer-events: none; }
+
+.strip-board { border-radius: 26px; background: rgba(255,255,255,.7); border: 5px solid #e3d3b4; overflow: hidden; transition: border-color .4s; }
+.strip-board.done { border-color: var(--gold); }
+.strip-slot { position: absolute; top: 0; bottom: 0; width: 33.33%; border-right: 4px dashed rgba(74,58,28,.3); }
+.strip-slot:last-of-type { border-right: 0; }
+.strip-slot.filled { border-color: transparent; }
+.strip-board.done .strip-slot { border-color: transparent; }
+.strip-box { position: absolute; inset: 0; }
+.choice .strip-box { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 20px; }
+.strip-layer { opacity: 0; transition: opacity .35s; }
+.strip-layer.on { opacity: 1; }
+
+.breath-ball { border-radius: 50%; display: grid; place-items: center; }
+.breath-inner { width: 100%; height: 100%; }
+.breath-inner svg { width: 100%; height: 100%; }
+
+.veg-clip { overflow: hidden; }
+.veg-pop { position: absolute; left: 12%; right: 12%; top: 0; bottom: 0; transform: translateY(105%); transition: transform .8s cubic-bezier(.3,.6,.4,1), opacity .6s; pointer-events: none; }
+.veg-pop.up { transform: translateY(14%); pointer-events: auto; }
+.veg-pop > * { width: 100%; height: 86%; }
+body.reduce-motion .veg-pop { transform: translateY(14%); opacity: 0; }
+body.reduce-motion .veg-pop.up { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .veg-pop { transform: translateY(14%); opacity: 0; } .veg-pop.up { opacity: 1; } }
+
+.pattern-road { background: #7c8496; border-top: 3px solid #6a7184; }
+.pattern-line { display: flex; gap: 6px; align-items: flex-end; }
+.pattern-car { flex: none; display: grid; place-items: center; }
+.pattern-car > * { width: 100%; height: 100%; }
+.pattern-car.gap { border: 4px dashed rgba(35,48,94,.4); border-radius: 18px; background: rgba(255,255,255,.4); }
+
+.sort-bin { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 3; }
+.sort-sign { width: 40%; aspect-ratio: 1; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 4px 0 rgba(0,0,0,.12); margin-bottom: -4%; z-index: 1; }
+.sort-sign > * { width: 72%; height: 72%; }
+.sort-basket { width: 100%; aspect-ratio: 260/170; }
+.sort-basket svg { width: 100%; height: 100%; }
+.sort-bin.glow { animation: glowsoft 2.4s ease-in-out infinite; }
+.sort-item { z-index: 6; pointer-events: none; }
+.sort-item > * { width: 100%; height: 100%; }
+
+.feel-face { display: grid; }
+.feel-face > svg { grid-area: 1 / 1; width: 100%; height: 100%; }
+
+.dress-window { border-radius: 20px; border: 8px solid #fbf3e2; box-shadow: 0 0 0 3px #e3d3b4; overflow: hidden; background: linear-gradient(180deg, #8fd0f5, #d8f0fb); }
+.dress-window.dw-rain { background: linear-gradient(180deg, #7f93ad, #b9c6d6); }
+.dress-window.dw-snow { background: linear-gradient(180deg, #a9b9d0, #e3eaf3); }
+.dw-sun { position: absolute; left: 22%; top: 8%; width: 56%; aspect-ratio: 1; }
+.dw-sun svg, .dw-cloud svg { width: 100%; height: 100%; }
+.dw-sun .sun-rays { transform-origin: 100px 100px; animation: spin 40s linear infinite; }
+.dw-cloud { position: absolute; left: 14%; top: 4%; width: 72%; aspect-ratio: 260/160; z-index: 1; }
+.dw-fall { position: absolute; inset: 0; }
+.dw-snow svg { position: absolute; top: -8%; animation: wxsnow 7s linear infinite; }
+.dress-kid > svg { width: 100%; height: 100%; }
+.worn { position: absolute; aspect-ratio: 1; transition: opacity .3s; }
+.worn > * { width: 100%; height: 100%; }
+.worn-wellies { aspect-ratio: 200/126; }
+.worn-sunglasses { aspect-ratio: 2.6; }
+.worn-sunglasses > * { object-fit: cover; }
+.worn-scarf { z-index: 2; }
+.worn-gloves { aspect-ratio: 3.4; display: flex; justify-content: space-between; }
+.worn-gloves > * { width: 26%; height: 100%; }
+.worn-gloves > *:last-child { transform: scaleX(-1); }
+body.reduce-motion .dw-snow svg, body.reduce-motion .dw-sun .sun-rays { animation: none !important; }
+body.reduce-motion .dw-snow svg { top: var(--y, 40%); }
+@media (prefers-reduced-motion: reduce) { .dw-snow svg, .dw-sun .sun-rays { animation: none !important; } .dw-snow svg { top: var(--y, 40%); } }
+
+/* Hungry alien's plates and the hungry fish */
+.alien-plates { left: 50%; transform: translateX(-50%); top: calc(5% + min(44vmin, 300px) * 1.05 + 8px); display: flex; gap: 10px; z-index: 3; }
+.alien-plate { width: clamp(40px, 9vmin, 64px); aspect-ratio: 1; border-radius: 50%; border: 4px dashed rgba(179,184,236,.55); display: grid; place-items: center; }
+.alien-plate.full { border: 4px solid var(--gold); background: rgba(255,255,255,.1); }
+.alien-plate > * { width: 70%; height: 70%; }
+.hungry-fish { filter: drop-shadow(0 0 10px rgba(255,220,120,.9)); }
+.alien-plates.side { left: 4%; top: 50%; transform: translateY(-50%); flex-direction: column; }
+.strip-ghost { position: absolute; left: 6%; top: 6%; width: 88%; height: 88%; opacity: .14; filter: grayscale(1); }

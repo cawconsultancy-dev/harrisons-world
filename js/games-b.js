@@ -151,6 +151,7 @@
               if (a) a.pause();
               HW.audio.sfx("pop"); HW.audio.sfx("note", HW.randInt(3, 9));
               if (popped % 4 === 1) { g.show("pop", 1000); g.say("pop"); }
+              if (g.stickerAt) g.stickerAt(b);
               g.anim(b, [{ scale: "1", opacity: 1 }, { scale: "1.35", opacity: 0 }], { duration: 300, always: true }).then(gone);
               g.sparkle(b);
             }, 50);

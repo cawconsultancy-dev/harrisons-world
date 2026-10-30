@@ -14,7 +14,7 @@
     if (key === "star") return HW.svgEl(A.star());
     if (A.SEA && A.SEA[key]) return HW.svgEl(A.SEA[key]());
     if (key === "fish") return HW.svgEl(A.genericFish(A.COLOURS.orange));
-    if (key === "igloo" || key === "queen" || key === "wellies") return HW.svgEl(A[key]());
+    if (key === "igloo" || key === "queen" || key === "wellies" || key === "pumpkin") return HW.svgEl(A[key]());
     return HW.img(key);
   };
   function sizeBox(el, css) { el.style.cssText += ";" + css; return el; }
@@ -190,18 +190,26 @@
 
   /* 5 ---------------------------------------------------------------- */
   HW.registerGame({
-    id: "alien", title: "Hungry alien", desc: "Pick a food for the alien, then More or All done",
-    world: "fruitveg", worlds: ["fruitveg", "planets"], bg: "space", voice: ["hungry", "yum", "more", "alldone"].concat(FRUIT, VEG),
+    id: "alien", title: "Hungry alien", desc: "Feed the alien until every plate is full",
+    world: "fruitveg", worlds: ["fruitveg", "planets"], bg: "space", voice: ["hungry", "yum", "one", "two", "three", "four", "five"].concat(FRUIT, VEG),
     icon: function () { return HW.svgEl(A.alien()); },
     start: function (g) {
       var alienBox = g.el("div", "abs"); alienBox.style.cssText = "left:50%;top:5%;transform:translateX(-50%);width:min(44vmin,300px);aspect-ratio:200/210";
       var alien = HW.svgEl(A.alien()); alienBox.appendChild(alien);
       alienBox.classList.add("float");
       var smile = alien.querySelector(".mouth-smile"), open = alien.querySelector(".mouth-open");
-      var row = null, after = null, last = [];
+      var row = null, last = [], r = 0, eaten = 0, need = 0, tummy = null;
+      var ROUNDS = [2, 3, 4, 3, 5, 2, 4, 5], NUMS = ["one", "two", "three", "four", "five"];
       function mouthOpen(on) { smile.style.display = on ? "none" : ""; open.style.display = on ? "" : "none"; }
+      /* a row of empty plates shows how many foods the alien wants this time */
+      function newRound() {
+        need = ROUNDS[r % ROUNDS.length]; eaten = 0;
+        if (tummy) tummy.remove();
+        tummy = g.el("div", "abs alien-plates" + (g.size().w > g.size().h * 1.3 ? " side" : ""));
+        for (var i = 0; i < need; i++) HW.el("div", "alien-plate", tummy);
+        offer();
+      }
       function offer() {
-        if (after) { after.remove(); after = null; }
         var n = HW.settings.choices;
         var pool = HW.shuffle(FRUIT.concat(VEG)).filter(function (k) { return last.indexOf(k) < 0; });
         var picks = pool.slice(0, n); last = picks;
@@ -220,17 +228,17 @@
         await g.wait(600);
         mouthOpen(false);
         g.bounce(alienBox);
-        g.show("yum"); await g.say("yum");
-        g.sparkle(alienBox);
+        var plate = tummy.children[eaten]; plate.classList.add("full"); plate.appendChild(HW.img(key));
+        eaten++;
+        g.show(NUMS[eaten - 1], 1400); await g.say(NUMS[eaten - 1]);
         row.remove(); row = null;
-        after = g.el("div", "choices");
-        var more = HW.el("button", "big-btn btn-more", after); more.innerHTML = HW.icons.plus + "<span>More</span>";
-        var done = HW.el("button", "big-btn btn-done", after); done.innerHTML = '<img src="img/e/alldone.svg" alt=""><span>All done</span>';
-        g.tap(more, async function () { g.busy = true; g.show("more"); await g.say("more"); g.busy = false; offer(); }, 900);
-        g.tap(done, async function () { g.show("alldone"); await g.say("alldone"); HW.leaveGame(); }, 900);
-        g.busy = false;
+        if (eaten < need) { g.busy = false; offer(); return; }
+        g.show("yum"); await g.say("yum");
+        await g.praise(alienBox);
+        await g.wait(600);
+        r++; g.busy = false; newRound();
       }
-      g.later(500, offer);
+      g.later(500, newRound);
     }
   });
 

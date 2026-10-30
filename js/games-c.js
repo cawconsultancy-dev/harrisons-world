@@ -118,53 +118,64 @@
   });
 
   /* 23 --------------------------------------------------------------- */
+  /* Each round has a different number of hungry fish. One shake of the pot feeds one fish,
+     and Emma counts them. When every fish is fed, new fish swim in. */
+  var FEED_ROUNDS = [2, 3, 4, 3, 5, 2, 4, 5];
   HW.registerGame({
-    id: "feedfish", title: "Feed the fish", desc: "Tap the food pot, then More or All done",
-    world: "sea", worlds: ["sea", "fruitveg"], bg: "sea", voice: ["hungry", "yum", "more", "alldone", "fish"],
+    id: "feedfish", title: "Feed the fish", desc: "Shake the food once for every hungry fish",
+    world: "sea", worlds: ["sea", "fruitveg", "numbers"], bg: "sea", voice: ["hungry", "yum", "fish", "one", "two", "three", "four", "five"],
     icon: function () { return HW.svgEl(A.foodPot()); },
     start: function (g) {
       seaFloor(g);
-      var s = g.size(), fish = [];
-      ["clownfish", "bluetang", "pufferfish"].forEach(function (k, i) {
-        var f = swimmer(g, k, s.h * (0.34 + i * 0.15), s.w * (0.25 + i * 0.25));
-        f.style.pointerEvents = "none"; fish.push(f);
-      });
+      var fish = [], fed = 0, r = 0, feeding = false;
       var pot = g.el("button", "abs"); pot.setAttribute("aria-label", "Fish food");
       pot.style.cssText = "left:50%;top:3%;transform:translateX(-50%);width:clamp(110px,20vmin,160px);aspect-ratio:120/140;z-index:5";
       pot._baseTransform = "translateX(-50%)";
       pot.appendChild(HW.svgEl(A.foodPot()));
-      var after = null, feeding = false;
-      function ready() {
-        if (after) { after.remove(); after = null; }
-        feeding = false;
+      var NUMS = ["one", "two", "three", "four", "five"];
+      function newRound() {
+        fish.forEach(function (f) { f.remove(); }); fish = []; fed = 0; feeding = false;
+        var n = FEED_ROUNDS[r % FEED_ROUNDS.length], s = g.size();
+        for (var i = 0; i < n; i++) {
+          var k = SWIMMERS[(i + r) % SWIMMERS.length];
+          var f = swimmer(g, k, s.h * (0.3 + (i % 3) * 0.17) + (i > 2 ? s.h * 0.08 : 0), s.w * (0.15 + 0.7 * i / Math.max(1, n - 1)));
+          f.style.pointerEvents = "none"; f._inner.classList.add("hungry-fish");
+          g.anim(f._inner, [{ opacity: 0 }, { opacity: 1 }], { duration: 700, always: true });
+          fish.push(f);
+        }
         g.glow(pot, true, true);
-        g.show("hungry"); g.say("hungry");
+        g.later(400, function () { g.show("hungry"); g.say("hungry"); });
       }
-      async function feed() {
-        if (feeding || g.busy) return;
-        feeding = true; g.glow(pot, false);
+      async function shake() {
+        if (feeding || fed >= fish.length) return;
+        feeding = true;
+        var target = fish[fed];
         g.wiggle(pot); HW.audio.sfx("shake");
-        var st = g.size(), c = g.centre(pot);
-        for (var i = 0; i < 12; i++) {
+        var st = g.size(), c = g.centre(pot), t = g.centre(target);
+        for (var i = 0; i < 6; i++) {
           var fl = g.el("div", "abs"); var z = HW.rand(9, 15);
-          fl.style.cssText = "width:" + z + "px;height:" + z + "px;border-radius:40%;background:" + HW.pick(["#e08a2e", "#f2c53d", "#d9653a"]) + ";left:" + (c.x + HW.rand(-st.w * 0.3, st.w * 0.3)) + "px;top:" + (c.y + c.h * 0.4) + "px;pointer-events:none;z-index:4";
+          fl.style.cssText = "width:" + z + "px;height:" + z + "px;border-radius:40%;background:" + HW.pick(["#e08a2e", "#f2c53d", "#d9653a"]) + ";left:" + (t.x + HW.rand(-30, 30)) + "px;top:" + (c.y + c.h * 0.4) + "px;pointer-events:none;z-index:4";
           (function (el, k) {
-            g.anim(el, [{ transform: "translateY(0) rotate(0deg)", opacity: 1 }, { transform: "translateY(" + st.h * HW.rand(0.35, 0.6) + "px) rotate(200deg)", opacity: 0 }], { duration: 2200 + k * 90, easing: "ease-in", always: true }).then(function () { el.remove(); });
+            g.anim(el, [{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + Math.max(20, t.y - c.y - c.h * 0.4) + "px)", opacity: 0 }], { duration: 1100 + k * 80, easing: "ease-in", always: true }).then(function () { el.remove(); });
           })(fl, i);
         }
-        await g.wait(1600);
+        await g.wait(1000);
         HW.audio.sfx("munch");
-        fish.forEach(function (f) { g.bounce(f._inner); });
-        g.show("yum"); await g.say("yum");
-        g.sparkle(fish[1]);
-        after = g.el("div", "choices");
-        var more = HW.el("button", "big-btn btn-more", after); more.innerHTML = HW.icons.plus + "<span>More</span>";
-        var done = HW.el("button", "big-btn btn-done", after); done.innerHTML = '<img src="img/e/alldone.svg" alt=""><span>All done</span>';
-        g.tap(more, async function () { g.show("more"); await g.say("more"); ready(); }, 900);
-        g.tap(done, async function () { g.show("alldone"); await g.say("alldone"); HW.leaveGame(); }, 900);
+        target._inner.classList.remove("hungry-fish"); g.bounce(target._inner);
+        fed++;
+        g.show(NUMS[fed - 1], 1400); await g.say(NUMS[fed - 1]);
+        feeding = false;
+        if (fed === fish.length) {
+          g.glow(pot, false);
+          g.show("yum"); await g.say("yum");
+          await g.praise(fish[0]);
+          await g.wait(500);
+          await Promise.all(fish.map(function (f) { return g.anim(f, [{ opacity: 1 }, { opacity: 0 }], { duration: 700, always: true }); }));
+          r++; newRound();
+        }
       }
-      g.tap(pot, feed, 900);
-      g.later(500, ready);
+      g.tap(pot, shake, 600);
+      newRound();
     }
   });
 

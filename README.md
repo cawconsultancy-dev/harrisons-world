@@ -1,12 +1,12 @@
 # Harrison's World
 
-Calm, simple tablet games about planets, fruit and veg, cars, the sea, music, shapes, numbers, letters, weather, and colouring, made for one little boy.
+Calm, simple tablet games about planets, fruit and veg, cars, the sea, music, shapes, numbers, letters, weather, feelings, and colouring, made for one little boy.
 
 Open it at https://cawconsultancy-dev.github.io/harrisons-world/
 
 ## What it is
 
-- 36 short games with big pictures, one clear spoken word at a time, and lots of praise.
+- 43 short games with big pictures, one clear spoken word at a time, and lots of praise.
 - A Dinner time world of calm games that need only one finger.
 - No timers, no scores, no losing. A "wrong" tap just wiggles and the right picture glows.
 - Calm instrumental music throughout, with a music button on every screen.
@@ -25,7 +25,7 @@ No accounts, adverts, cookies, analytics, tracking, microphone, or links to othe
 
 ## Credits and licences
 
-- Planets, car, alien, comet, sea animals, shapes, blocks, weather scenes, and colouring pictures: original drawings for this app.
+- Planets, car, alien, comet, sea animals, shapes, blocks, weather scenes, feelings faces, the child to dress, and colouring pictures: original drawings for this app.
 - Fruit, veg, and the other emoji-style pictures: [Twemoji](https://github.com/jdecked/twemoji) by Twitter, Inc and other contributors, licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - Font: Fredoka, licensed under the SIL Open Font Licence 1.1 (see `fonts/OFL.txt`).
 - Spoken words: recorded with the Kokoro text-to-speech model (Apache 2.0 licence). The slower copies are the same recordings, stretched to 85% speed with the pitch unchanged.
