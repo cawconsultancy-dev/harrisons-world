@@ -156,7 +156,7 @@
           var fl = g.el("div", "abs"); var z = HW.rand(9, 15);
           fl.style.cssText = "width:" + z + "px;height:" + z + "px;border-radius:40%;background:" + HW.pick(["#e08a2e", "#f2c53d", "#d9653a"]) + ";left:" + (t.x + HW.rand(-30, 30)) + "px;top:" + (c.y + c.h * 0.4) + "px;pointer-events:none;z-index:4";
           (function (el, k) {
-            g.anim(el, [{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + Math.max(20, t.y - c.y - c.h * 0.4) + "px)", opacity: 0 }], { duration: 1100 + k * 80, easing: "ease-in", always: true }).then(function () { el.remove(); });
+            g.anim(el, [{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + Math.max(20, t.y - c.y - c.h * 0.4) + "px)", opacity: 0 }], { duration: 1100 + k * 80, easing: "ease-in" }).then(function () { el.remove(); });
           })(fl, i);
         }
         await g.wait(1000);

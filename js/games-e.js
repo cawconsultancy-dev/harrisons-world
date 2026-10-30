@@ -57,7 +57,7 @@
         board.innerHTML = "";
         /* a faint copy of the whole picture shows what he is making */
         var ghost = HW.picture(key); ghost.classList.add("strip-ghost"); board.appendChild(ghost);
-        var slots = [0, 1, 2].map(function (k) { var sl = HW.el("div", "strip-slot", board); sl.style.left = (k * 33.33) + "%"; return sl; });
+        var slots = [0, 1, 2].map(function (k) { var sl = HW.el("div", "strip-slot", board); sl.style.left = (6 + k * 29.33) + "%"; return sl; });
         var layers = [0, 1, 2].map(function (k) { var l = strip(key, k, false); l.classList.add("strip-layer"); board.appendChild(l); return l; });
         row = g.el("div", "choices n3");
         HW.shuffle([0, 1, 2]).forEach(function (k) {
@@ -89,7 +89,7 @@
   /* ================= 38 Breathe with me ================= */
   HW.registerGame({
     id: "breathe", title: "Breathe with me", desc: "Tap the bubble and breathe in and out slowly",
-    world: "calm", worlds: ["calm", "dinner"], bg: "night", voice: ["breathein", "breatheout", "more_q", "more", "welldone"],
+    world: "calm", worlds: ["calm", "dinner"], bg: "night", voice: ["breathein", "breatheout"],
     icon: function () { return HW.svgEl(A.breathBall()); },
     start: function (g) {
       var s = g.size(), size = Math.min(s.w * 0.62, s.h * 0.5, 380), going = false;
@@ -277,7 +277,7 @@
   /* ================= 42 Feelings faces ================= */
   HW.registerGame({
     id: "feelings", title: "Feelings faces", desc: "Tap a feeling and the face shows it",
-    world: "calm", worlds: ["calm", "letters"], bg: "day", voice: A.FEELINGS,
+    world: "calm", worlds: ["calm"], bg: "day", voice: A.FEELINGS,
     icon: function () { return HW.svgEl(A.face("happy")); },
     start: function (g) {
       var s = g.size(), size = Math.min(s.w * 0.7, s.h * 0.48, 380), cur = "happy", taps = 0;
@@ -356,7 +356,9 @@
         if (row) row.remove();
         if (!todo.length) { done(); return; }
         var want = todo[0];
-        var wrongPool = [].concat(OUTFITS.sunny, OUTFITS.rain, OUTFITS.snow).filter(function (k) { return OUTFITS[weather].indexOf(k) < 0; });
+        /* only clearly wrong clothes are offered: no wellies for snow, no scarf for rain */
+        var WRONG = { sunny: ["coat", "scarf", "gloves", "wellies", "umbrella"], rain: ["sunhat", "sunglasses", "tshirt"], snow: ["sunhat", "sunglasses", "tshirt"] };
+        var wrongPool = WRONG[weather];
         var items = HW.shuffle([want].concat(HW.shuffle(wrongPool).slice(0, HW.settings.choices - 1))), right = null;
         row = g.choices(items, function (k) { return HW.picture(k); }, async function (k, btn, btns) {
           if (k !== want) { g.help(btn, right, want); return; }

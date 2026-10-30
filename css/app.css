@@ -477,7 +477,7 @@ body.reduce-motion .rain-drops i, body.reduce-motion .wxl-snow svg { top: var(--
 
 .strip-board { border-radius: 26px; background: rgba(255,255,255,.7); border: 5px solid #e3d3b4; overflow: hidden; transition: border-color .4s; }
 .strip-board.done { border-color: var(--gold); }
-.strip-slot { position: absolute; top: 0; bottom: 0; width: 33.33%; border-right: 4px dashed rgba(74,58,28,.3); }
+.strip-slot { position: absolute; top: 6%; bottom: 6%; width: 29.33%; border-right: 4px dashed rgba(74,58,28,.3); }
 .strip-slot:last-of-type { border-right: 0; }
 .strip-slot.filled { border-color: transparent; }
 .strip-board.done .strip-slot { border-color: transparent; }
@@ -547,3 +547,32 @@ body.reduce-motion .dw-snow svg { top: var(--y, 40%); }
 .hungry-fish { filter: drop-shadow(0 0 10px rgba(255,220,120,.9)); }
 .alien-plates.side { left: 4%; top: 50%; transform: translateY(-50%); flex-direction: column; }
 .strip-ghost { position: absolute; left: 6%; top: 6%; width: 88%; height: 88%; opacity: .14; filter: grayscale(1); }
+
+/* ---------- finger trails, the road, heavy and light, alien moves, morning time ---------- */
+.trail-guide svg { display: block; }
+.trail-start { border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px rgba(233,185,73,.35); pointer-events: none; z-index: 3; }
+.road-car { transform-origin: 50% 70%; z-index: 4; transition: left .12s linear, top .12s linear; }
+.road-car > svg { width: 100%; height: 100%; }
+.road-star > * { width: 100%; height: 100%; }
+.heavy-shelf { background: #c9a678; border-radius: 6px; box-shadow: 0 4px 0 #a8875c; }
+.heavy-item { z-index: 3; }
+.heavy-item > * { width: 100%; height: 100%; }
+.alien-body { width: 100%; height: 100%; transform-origin: 50% 90%; }
+.alien-body > svg { width: 100%; height: 100%; }
+.alien-body.asleep .pupil { opacity: 0; }
+.alien-extra { position: absolute; inset: 0; pointer-events: none; }
+.alien-zzz { position: absolute; right: -18%; top: -6%; width: 38%; }
+.alien-hand { position: absolute; right: -24%; top: 30%; width: 36%; transform-origin: 30% 90%; }
+.ft-card { border-radius: 30px; background: #fff; box-shadow: 0 8px 0 rgba(0,0,0,.12), 0 14px 26px rgba(0,0,0,.14); display: flex; flex-direction: column; align-items: center; padding: 6% 6% 8%; color: #23305e; }
+.ft-label { font-weight: 700; font-size: clamp(22px, 5vmin, 34px); }
+.ft-pic { flex: 1; width: 80%; display: grid; place-items: center; }
+.ft-pic > * { width: 100%; height: 100%; object-fit: contain; }
+.ft-then { opacity: .8; }
+.ft-card.ticked::after { content: ""; position: absolute; right: 8%; top: 6%; width: 18%; aspect-ratio: 1; border-radius: 50%; background: #3f9b62 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 70% no-repeat; }
+.ft-track { left: 50%; bottom: 5%; transform: translateX(-50%); display: flex; gap: clamp(6px, 2vw, 14px); }
+.ft-dot { width: clamp(44px, 9vmin, 70px); aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,.75); border: 3px solid #c9d3e6; display: grid; place-items: center; opacity: .55; }
+.ft-dot > * { width: 64%; height: 64%; }
+.ft-dot.now { opacity: 1; border-color: var(--gold); }
+.ft-dot.done { opacity: 1; border-color: #3f9b62; }
+.ft-end { border-style: dashed; }
+body.reduce-motion .sort-bin.glow { animation: none; box-shadow: none; filter: drop-shadow(0 0 14px rgba(255,220,120,.85)); }
